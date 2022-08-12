@@ -53,4 +53,4 @@
 
 # References
 1. https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/
-2. Service Map : https://miro.com/app/board/uXjVPfE957w=/
+2. Service Map : ![alt text](./images/servicemap.png)
