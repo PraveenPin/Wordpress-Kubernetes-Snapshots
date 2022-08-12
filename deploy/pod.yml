@@ -1,0 +1,68 @@
+apiVersion: "v1"
+kind: Pod
+metadata:
+  name: web
+  labels:
+    name: web
+    app: demo
+spec:
+  volumes:
+    - name: wp-persistent-storage
+      persistentVolumeClaim:
+        claimName: wp-pv-claim
+    - name: mysql-persistent-storage
+      persistentVolumeClaim:
+        claimName: mysql-pv-claim
+  containers:
+    - name: mysql
+      image: mysql
+      ports:
+        - containerPort: 3306
+          name: mysql
+          protocol: TCP
+      env:
+        - name: "MYSQL_ROOT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+      volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+    - name: wp-mysql
+      image: wordpress:6.0.0-php8.0-apache
+      ports:
+        - containerPort: 80
+          name: wp
+          protocol: TCP
+      env:
+        - name: "WORDPRESS_DB_HOST"
+          value: "127.0.0.1"
+        - name: "WORDPRESS_DB_USER"
+          value: "root"
+        - name: "WORDPRESS_DB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+      volumeMounts:
+        - name: wp-persistent-storage
+          mountPath: /var/www/html
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  labels:
+    name: web
+    app: demo
+spec:
+  selector:
+    name: web 
+  type: LoadBalancer
+  ports:
+   - port: 80
+     name: wp
+     protocol: TCP
+     targetPort: 80
